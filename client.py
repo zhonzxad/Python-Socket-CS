@@ -31,8 +31,8 @@ class ClientObj():
                 if message.find(splitChar) == -1:
                     print("请输入准确的接受方的IP地址,或者检查输入格式")
                     continue
-                msg = hostip + splitChar + message
-                self.sock.sendall(str.encode(msg))
+                
+                self.sock.sendall(str.encode(message))
         
         self.sock.close()
 
@@ -40,18 +40,24 @@ class ClientObj():
         while True:
             data = self.sock.recv(BUFFSIZE).decode('utf-8')
 
-            if data.find(splitChar) == -1:
-                SnedIp = self.ip
-                message = data
-            else:
-                try:
+            try:
+                if data.find(splitChar) == -1:
+                    SnedIp = self.ip
+                    message = data
+                else:
                     SnedIp, message = data.split(splitChar)
-                except:
-                    print("收到错误的消息，丢弃")
-                    continue
-
+            except:
+                print("收到错误的消息，丢弃")
+                continue
+            
             if SnedIp != self.localhost:
                 continue
+            if len(message) == 0 or \
+                message == " ":
+                continue
+            if message == "exit":
+                break
+
             if self.first:
                 print(message)
                 self.first = False

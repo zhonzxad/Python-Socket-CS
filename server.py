@@ -17,37 +17,56 @@ class MyServer(socketserver.BaseRequestHandler):
     """
     first = True
     def handle(self):
-        if (self.request) not in all_clients:
-            all_clients.append(self.request)
-        self.conn = self.request
-        (host, port) = self.client_address()
-        # 发送登录提示
-        strmsg = ("*"*8 + "欢迎登录" + "*"*8)
-        self.conn.sendall(strmsg.encode())
-        print("有客户端连接了")
-        while True:
-            # 接收消息
-            recstr = self.conn.recv(BUFFSIZE).decode('utf-8')
-            
-            if len(recstr) == 0 or \
-                recstr == " ":
-                continue
-            elif recstr == "exit":
+        try:
+            if (self.request) not in all_clients:
+                all_clients.append(self.request)
+            # 发送登录提示
+            strmsg = ("*"*8 + "欢迎登录" + "*"*8)
+            self.request.sendall(strmsg.encode())
+            print("有客户端连接了")
+            while True:
+                ret = self.MsgHandle(self.request)
+                if ret == 0:
+                    continue
+                elif ret == -1:
+                    break
+                else:
+                    continue
+            self.request.close()
+        except:
+            self.request.close()
+            self.finish()
+
+    def MsgHandle(request):
+        # 发送方地址
+        add, poart = request.getpeername()
+        # 接收消息
+        recstr = request.recv(BUFFSIZE).decode('utf-8')
+        
+        if len(recstr) == 0 or \
+            recstr == " ":
+            return 0
+        if recstr == "exit":
+            return -1
+        
+        try:
+            sendIp, msg = recstr.split(splitChar)
+        except:
+            print("收到消息的格式不正确, 丢弃")
+            return 0
+
+        print("{}发送消息给{}, 消息长度{}".format(add, sendIp, len(recstr)))
+        sendmsg = sendIp + splitChar + msg
+        for client in all_clients:
+            if client._closed: 
+                all_clients.remove(client)
+            elif client.getpeername()[0] == sendIp:
+                client.sendall(str.encode(sendmsg))
                 break
             else:
-                try:
-                    fromIp, sendIp, msg = recstr.split(splitChar)
-                except:
-                    print("收到消息的格式不正确, 丢弃")
-                    continue
-
-                print("{}发送消息给{}, 消息长度{}".format(fromIp, sendIp, len(recstr)))
-                sendmsg = sendIp + splitChar + msg
-                for clients in all_clients:
-                    if clients._closed: 
-                        all_clients.remove(clients)
-                    else:
-                        clients.sendall(str.encode(sendmsg))
+                continue
+        
+        return 0
 
 
 def get_host_ip():
