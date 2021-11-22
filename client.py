@@ -14,6 +14,7 @@ class ClientObj():
         self.sock = socket.socket()
         self.sock.connect((self.ip, 1334, ))
         self.first = True
+        self.isfinish = False
 
     def __del__(self):
         pass
@@ -23,6 +24,7 @@ class ClientObj():
             message = input("输入要发送的消息: ")
             if message == "exit":
                 self.sock.sendall(b"exit")
+                self.isfinish = True
                 break
             else:
                 if len(message) == 0 or \
@@ -31,13 +33,16 @@ class ClientObj():
                 if message.find(splitChar) == -1:
                     print("请输入准确的接受方的IP地址,或者检查输入格式")
                     continue
-                
+
                 self.sock.sendall(str.encode(message))
         
         self.sock.close()
 
     def RecMsg(self):
         while True:
+            if self.isfinish:
+                break
+            
             data = self.sock.recv(BUFFSIZE).decode('utf-8')
 
             try:
