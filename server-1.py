@@ -1,7 +1,7 @@
 '''
 Author: zhonzxad
 Date: 2021-11-21 14:30:14
-LastEditTime: 2021-11-25 20:58:24
+LastEditTime: 2021-11-25 20:55:46
 LastEditors: zhonzxad
 '''
 #-*- coding:utf-8 -*-
@@ -49,11 +49,12 @@ class MyServer(socketserver.BaseRequestHandler):
 
             print("{}发送消息给{}, 消息长度{}".format(add, sendIp, len(msg)))
             
+            message = sendIp + splitChar + msg
             for client in all_clients:
                 if client._closed: 
                     all_clients.remove(client)
                 elif client.getpeername()[0] == sendIp:
-                    client.sendall(str.encode(msg))
+                    client.sendall(str.encode(message))
                     self.findSendIp = True
                     break
                 else:

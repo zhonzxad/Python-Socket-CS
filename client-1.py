@@ -1,7 +1,7 @@
 '''
 Author: zhonzxad
 Date: 2021-11-21 14:30:32
-LastEditTime: 2021-11-25 20:59:02
+LastEditTime: 2021-11-25 20:57:10
 LastEditors: zhonzxad
 '''
 #-*- coding:utf-8 -*-
@@ -49,8 +49,20 @@ class ClientObj():
             if self.isfinish:
                 break
 
-            message = self.sock.recv(BUFFSIZE).decode('utf-8')
+            data = self.sock.recv(BUFFSIZE).decode('utf-8')
 
+            try:
+                if data.find(splitChar) == -1:
+                    RecIp = self.ip
+                    message = data
+                else:
+                    RecIp, message = data.split(splitChar)
+            except:
+                print("收到错误的消息，丢弃")
+                continue
+            
+            if RecIp != self.localhost:
+                continue
             if len(message) == 0 or \
                 message == " ":
                 continue
